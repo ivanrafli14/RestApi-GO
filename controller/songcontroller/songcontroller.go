@@ -1,6 +1,8 @@
 package songcontroller
 
 import (
+	"fmt"
+
 	"github.com/aidarkhanov/nanoid"
 	"github.com/gin-gonic/gin"
 	"github.com/ivanrafli14/OpenMusicAPI-dicoding/model"
@@ -9,9 +11,19 @@ import (
 
 func Index(c *gin.Context){
 	var songs []model.Song
-	model.DB.Select([]string{"id", "Title", "performer"}).Find(&songs)
+
+	title_qu:= c.Query("title")
+	performer_qu:= c.Query("performer")
+
+	title_qu = "%" + title_qu + "%"
+	performer_qu = "%" + performer_qu + "%"
+
+	fmt.Println(title_qu, performer_qu)
+
+	model.DB.Where("title LIKE ? AND performer LIKE ?", title_qu, performer_qu).Find(&songs)
 	var temp []map[string]interface{}
 
+	
 	for _, el := range songs {
 		temp = append(temp, map[string]interface{}{
 			"id":  el.ID,

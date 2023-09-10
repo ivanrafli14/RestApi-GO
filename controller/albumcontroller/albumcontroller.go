@@ -12,7 +12,9 @@ import (
 func Show(c *gin.Context){
 	var album model.Album
 	id := c.Param("id")
-	if err := model.DB.First(&album, "id = ?", id).Error; err != nil {
+	
+	
+	if err := model.DB.Model(&model.Album{}).Preload("Song").Where("albums.id = ?", id).First(&album).Error; err != nil {
 		switch err {
 		case gorm.ErrRecordNotFound:
 			c.AbortWithStatusJSON(404, gin.H{
@@ -28,14 +30,25 @@ func Show(c *gin.Context){
 			return
 		}
 	}
+	var songs []model.Song
+
+	model.DB.Where("album_id = ? ", id).Find(&songs)
 	// temp := map[string] model.Album {"album": album}
 	// res,_ :=  json.Marshal(temp)
+	 
+
+	// data["songs"]  {
+	// 	album,
+	// 	songs,
+	// }
+
 	res := gin.H{
 		"album" : album,
-	}
+	 }
+
 	c.JSON(200, gin.H{
 		"status": "success",
-		"data": res,
+		"data":res,
 	})
 }
 
@@ -60,7 +73,7 @@ func Create(c *gin.Context){
 		return
 	}
 	str := "album-" + id1
-	data := model.Album{ID: str, Name: album.Name, Year: album.Year}
+	data := model.Album{ID: str, Name: album.Name, Year: album.Year,}
 	model.DB.Create(&data)
 	
 	res := gin.H{
